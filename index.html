@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Authentication</title>
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+    <!-- تحديد ملف CSS إذا لزم -->
 </head>
 <body>
     <h1>Phone Authentication</h1>
@@ -23,7 +21,13 @@
         <input type="text" id="verification-code" placeholder="123456" />
         <button id="verify-code-btn">Verify Code</button>
     </div>
-    <script>
+
+    <!-- تحديد مكتبات Firebase كـ Modules -->
+    <script type="module">
+        // استيراد مكتبات Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+
         // 1. إعداد Firebase
         const firebaseConfig = {
             apiKey: "AlzaSyBqX4CekWNOIL0ZbTD76j3HS_1sS27_q7o",
@@ -35,17 +39,17 @@
         };
 
         // تهيئة Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
         // 2. إعداد reCAPTCHA
         const setupRecaptcha = () => {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
                 'size': 'invisible',
                 'callback': (response) => {
                     console.log("reCAPTCHA verified");
                 }
-            });
+            }, auth);
         };
 
         // 3. إرسال كود التحقق
@@ -54,7 +58,7 @@
             const phoneNumber = document.getElementById("phone-number").value;
             const appVerifier = window.recaptchaVerifier;
 
-            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
                 .then((confirmationResult) => {
                     window.confirmationResult = confirmationResult;
                     alert("Verification code sent!");
