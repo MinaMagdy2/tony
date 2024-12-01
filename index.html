@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Authentication</title>
-    <!-- تحديد ملف CSS إذا لزم -->
 </head>
 <body>
     <h1>Phone Authentication</h1>
@@ -22,13 +21,12 @@
         <button id="verify-code-btn">Verify Code</button>
     </div>
 
-    <!-- تحديد مكتبات Firebase كـ Modules -->
     <script type="module">
         // استيراد مكتبات Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
         import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-        // 1. إعداد Firebase
+        // إعداد Firebase
         const firebaseConfig = {
             apiKey: "AlzaSyBqX4CekWNOIL0ZbTD76j3HS_1sS27_q7o",
             authDomain: "smstext-973c3.firebaseapp.com",
@@ -42,17 +40,24 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // 2. إعداد reCAPTCHA
+        // إعداد reCAPTCHA
         const setupRecaptcha = () => {
-            window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+            const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
                 'size': 'invisible',
                 'callback': (response) => {
                     console.log("reCAPTCHA verified");
                 }
             }, auth);
+
+            // تفعيل reCAPTCHA
+            recaptchaVerifier.render().catch((error) => {
+                console.error("Error rendering reCAPTCHA:", error);
+            });
+
+            window.recaptchaVerifier = recaptchaVerifier;
         };
 
-        // 3. إرسال كود التحقق
+        // إرسال كود التحقق
         const sendVerificationCode = () => {
             setupRecaptcha();
             const phoneNumber = document.getElementById("phone-number").value;
@@ -68,7 +73,7 @@
                 });
         };
 
-        // 4. التحقق من الكود
+        // التحقق من الكود
         const verifyCode = () => {
             const code = document.getElementById("verification-code").value;
 
