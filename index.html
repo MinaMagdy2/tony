@@ -1,48 +1,87 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إرسال رسالة تأكيد</title>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <title>Phone Authentication</title>
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
 </head>
 <body>
-    <h1>أدخل رقم هاتفك لتلقي رسالة تأكيد</h1>
-    <form id="phoneForm">
-        <input type="text" id="phone" placeholder="رقم الهاتف" required>
-        <button type="submit">إرسال</button>
-    </form>
+    <h1>Phone Authentication</h1>
+    <div>
+        <label for="phone-number">Enter Phone Number:</label>
+        <input type="text" id="phone-number" placeholder="+201234567890" />
+        <button id="send-code-btn">Send Verification Code</button>
+    </div>
+    <br>
     <div id="recaptcha-container"></div>
-
+    <br>
+    <div>
+        <label for="verification-code">Enter Verification Code:</label>
+        <input type="text" id="verification-code" placeholder="123456" />
+        <button id="verify-code-btn">Verify Code</button>
+    </div>
     <script>
-        // إعداد Firebase
+        // 1. إعداد Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyBqX4CekWNOIL0ZbTD76j3HS_1sS27_q7o", // Web API Key الخاصة بك
-            authDomain: "smstext-973c3.firebaseapp.com", // صيغة صحيحة
-            projectId: "smstext-973c3", 
-            storageBucket: "smstext-973c3.appspot.com", // استخدم Project ID الخاص بك هنا
-            messagingSenderId: "528346449646", 
+            apiKey: "AlzaSyBqX4CekWNOIL0ZbTD76j3HS_1sS27_q7o",
+            authDomain: "smstext-973c3.firebaseapp.com",
+            projectId: "smstext-973c3",
+            storageBucket: "smstext-973c3.appspot.com",
+            messagingSenderId: "528346449646",
+            appId: "1:528346449646:web:xxxxxxxxxxxxxx"
         };
-        
-        firebase.initializeApp(firebaseConfig);
 
-        // إعداد reCAPTCHA
-        const appVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+        // تهيئة Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-        document.getElementById('phoneForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const phoneNumber = document.getElementById('phone').value;
+        // 2. إعداد reCAPTCHA
+        const setupRecaptcha = () => {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    console.log("reCAPTCHA verified");
+                }
+            });
+        };
 
-            firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+        // 3. إرسال كود التحقق
+        const sendVerificationCode = () => {
+            setupRecaptcha();
+            const phoneNumber = document.getElementById("phone-number").value;
+            const appVerifier = window.recaptchaVerifier;
+
+            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
                 .then((confirmationResult) => {
-                    // تم إرسال رسالة التأكيد بنجاح
-                    alert('تم إرسال رسالة التأكيد إلى ' + phoneNumber);
-                }).catch((error) => {
-                    console.error('Error:', error);
-                    alert('حدث خطأ أثناء إرسال الرسالة.');
+                    window.confirmationResult = confirmationResult;
+                    alert("Verification code sent!");
+                })
+                .catch((error) => {
+                    console.error("Error sending code:", error);
                 });
-        });
+        };
+
+        // 4. التحقق من الكود
+        const verifyCode = () => {
+            const code = document.getElementById("verification-code").value;
+
+            window.confirmationResult.confirm(code)
+                .then((result) => {
+                    const user = result.user;
+                    alert("Phone number verified successfully!");
+                    console.log("User:", user);
+                })
+                .catch((error) => {
+                    console.error("Invalid code:", error);
+                });
+        };
+
+        // ربط الأزرار بالأحداث
+        document.getElementById("send-code-btn").addEventListener("click", sendVerificationCode);
+        document.getElementById("verify-code-btn").addEventListener("click", verifyCode);
     </script>
 </body>
 </html>
