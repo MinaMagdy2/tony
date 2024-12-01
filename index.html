@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إرسال رسالة تأكيد</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+</head>
+<body>
+    <h1>أدخل رقم هاتفك لتلقي رسالة تأكيد</h1>
+    <form id="phoneForm">
+        <input type="text" id="phone" placeholder="رقم الهاتف" required>
+        <button type="submit">إرسال</button>
+    </form>
+    <div id="recaptcha-container"></div>
+
+    <script>
+        // إعداد Firebase
+        const firebaseConfig = {
+    apiKey: "AIzaSyBqX4CekWNOIL0ZbTD76j3HS_1sS27_q7o", // استبدل بـ Web API Key الخاصة بك
+    authDomain: "smstext-973c3", // استخدم Project ID الخاص بك هنا
+    projectId: "smstext-973c3", // استخدم Project ID الخاص بك هنا
+    storageBucket: "smstext-973c3", // استخدم Project ID الخاص بك هنا
+    messagingSenderId: "528346449646", // استخدم Project Number هنا إذا كنت بحاجة له
+    appId: "YOUR_APP_ID" // إذا كان لديك App ID، يمكنك إضافته هنا
+};
+        firebase.initializeApp(firebaseConfig);
+
+        // إعداد reCAPTCHA
+        const appVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+
+        document.getElementById('phoneForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const phoneNumber = document.getElementById('phone').value;
+
+            firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    // تم إرسال رسالة التأكيد بنجاح
+                    alert('تم إرسال رسالة التأكيد إلى ' + phoneNumber);
+                }).catch((error) => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء إرسال الرسالة.');
+                });
+        });
+    </script>
+</body>
+</html>
